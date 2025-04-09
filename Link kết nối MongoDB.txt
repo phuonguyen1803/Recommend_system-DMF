@@ -1,0 +1,1 @@
+mongodb+srv://trandinhanhduy2004:Duytda@03@cluster0.13rkl6i.mongodb.net/thuongmai?retryWrites=true&w=majority
