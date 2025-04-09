@@ -1,0 +1,388 @@
+{% extends "layout.html" %}
+
+{% block title %}AmazonRecommend - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Carousel -->
+<div id="heroCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+    <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+  </div>
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <div class="d-block w-100 bg-dark text-white" style="height: 350px;">
+        <div class="container h-100 d-flex align-items-center">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h1>Welcome to AmazonRecommend</h1>
+              <p class="lead">Discover products you'll love with our AI-powered recommendation system.</p>
+              <a href="#top-products" class="btn btn-warning">Explore Top Products</a>
+            </div>
+            <div class="col-md-6 text-end">
+              <i class="fas fa-shopping-cart fa-10x text-warning opacity-50"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <div class="d-block w-100 bg-primary text-white" style="height: 350px;">
+        <div class="container h-100 d-flex align-items-center">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h1>Personalized Recommendations</h1>
+              <p class="lead">Our advanced AI learns your preferences to suggest products you'll love.</p>
+              <a href="#recommended-products" class="btn btn-warning">See Recommendations</a>
+            </div>
+            <div class="col-md-6 text-end">
+              <i class="fas fa-brain fa-10x text-white opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <div class="d-block w-100 bg-success text-white" style="height: 350px;">
+        <div class="container h-100 d-flex align-items-center">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h1>Top Products</h1>
+              <p class="lead">Check out the most popular products right now!</p>
+              <a href="#top-products" class="btn btn-warning">See Top Products</a>
+            </div>
+            <div class="col-md-6 text-end">
+              <i class="fas fa-star fa-10x text-white opacity-25"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+
+<!-- Top 5 Products Section -->
+<section class="py-5" id="top-products">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Top 5 Products</h2>
+      <a href="#" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    
+    {% if top_products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-4">
+      {% for product in top_products %}
+      <div class="col">
+        <div class="card h-100 shadow-sm border-success">
+          <div class="position-absolute top-0 start-0 bg-success text-white px-2 py-1 m-2 rounded">
+            <i class="fas fa-star me-1"></i> Top
+          </div>
+          <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}"
+               style="height: 180px; object-fit: contain; padding: 15px;"
+               onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+            <div class="mb-2">
+              {% if product.rating != 'N/A' %}
+              <div class="text-warning">
+                {% set rating = product.rating|float %}
+                {% for i in range(5) %}
+                  {% if i < rating|int %}
+                    <i class="fas fa-star"></i>
+                  {% elif i < rating %}
+                    <i class="fas fa-star-half-alt"></i>
+                  {% else %}
+                    <i class="far fa-star"></i>
+                  {% endif %}
+                {% endfor %}
+                <span class="text-muted ms-1 small">{{ product.rating }}</span>
+              </div>
+              {% endif %}
+            </div>
+            <div class="mt-auto">
+              <p class="card-text mb-2">
+                {% if product.discounted_price != 'N/A' %}
+                <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+                {% if product.discounted_price != product.price %}
+                <span class="text-decoration-line-through ms-2 text-muted">{{ product.price }}</span>
+                {% endif %}
+                {% else %}
+                <span class="fw-bold">{{ product.price }}</span>
+                {% endif %}
+              </p>
+              <div class="d-flex justify-content-between">
+                <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-outline-success">View</a>
+                <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post" class="d-inline">
+                  <input type="hidden" name="quantity" value="1">
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <button type="submit" class="btn btn-success">
+                    <i class="fas fa-cart-plus"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No top products available</div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Categories Quick Links -->
+<div class="container mb-5">
+  <h2 class="text-center mb-4">Shop by Category</h2>
+  <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+    {% if categories %}
+      {% for category in categories[:6] %}
+        <div class="col">
+          <a href="{{ url_for('category', category=category) }}" class="text-decoration-none">
+            <div class="card text-center h-100 bg-light border-0">
+              <div class="card-body">
+                <i class="fas fa-tag fa-2x mb-3 text-primary"></i>
+                <h6 class="card-title">{{ category }}</h6>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12 text-center">
+        <p>No categories available</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Popular Products Section -->
+<section class="py-5 bg-light" id="popular-products">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Popular Products</h2>
+      <a href="#" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    
+    {% if popular_products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      {% for product in popular_products %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="position-relative">
+            <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+                 style="height: 200px; object-fit: contain; padding: 15px;" 
+                 onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+            {% if product.discounted_price != 'N/A' and product.discounted_price != product.price %}
+            <div class="position-absolute top-0 end-0 bg-danger text-white px-2 py-1 m-2 rounded">
+              Sale
+            </div>
+            {% endif %}
+          </div>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+            <div class="mb-2">
+              {% if product.rating != 'N/A' %}
+              <div class="text-warning">
+                {% set rating = product.rating|float %}
+                {% for i in range(5) %}
+                  {% if i < rating|int %}
+                    <i class="fas fa-star"></i>
+                  {% elif i < rating %}
+                    <i class="fas fa-star-half-alt"></i>
+                  {% else %}
+                    <i class="far fa-star"></i>
+                  {% endif %}
+                {% endfor %}
+                <span class="text-muted ms-1 small">{{ product.rating }}</span>
+              </div>
+              {% endif %}
+            </div>
+            <div class="mt-auto">
+              <p class="card-text mb-2">
+                {% if product.discounted_price != 'N/A' %}
+                <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+                {% if product.discounted_price != product.price %}
+                <span class="text-decoration-line-through ms-2 text-muted">{{ product.price }}</span>
+                {% endif %}
+                {% else %}
+                <span class="fw-bold">{{ product.price }}</span>
+                {% endif %}
+              </p>
+              <div class="d-flex justify-content-between">
+                <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-outline-primary">View</a>
+                <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post" class="d-inline">
+                  <input type="hidden" name="quantity" value="1">
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-cart-plus"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No popular products available</div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Featured Banner -->
+<div class="container py-5">
+  <div class="p-5 bg-primary text-white rounded">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h2>{{ featured_category }}</h2>
+        <p class="lead">Explore our collection of high-quality products in this category.</p>
+        <a href="{{ url_for('category', category=featured_category) }}" class="btn btn-light">Browse Now</a>
+      </div>
+      <div class="col-md-4 text-center text-md-end">
+        <i class="fas fa-gift fa-5x text-white opacity-50"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Featured Category Products -->
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>{{ featured_category }} Products</h2>
+      <a href="{{ url_for('category', category=featured_category) }}" class="text-decoration-none">View all <i class="fas fa-arrow-right ms-1"></i></a>
+    </div>
+    
+    {% if featured_products %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      {% for product in featured_products %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+               style="height: 200px; object-fit: contain; padding: 15px;" 
+               onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+            <p class="card-text mb-2 mt-auto">
+              {% if product.discounted_price != 'N/A' %}
+              <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+              {% if product.discounted_price != product.price %}
+              <span class="text-decoration-line-through ms-2 text-muted">{{ product.price }}</span>
+              {% endif %}
+              {% else %}
+              <span class="fw-bold">{{ product.price }}</span>
+              {% endif %}
+            </p>
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-outline-primary">View</a>
+              <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn btn-warning">
+                  <i class="fas fa-cart-plus"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">No featured products available</div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Recommended Products Section -->
+{% if recommended_products %}
+<section class="py-5 bg-light" id="recommended-products">
+  <div class="container">
+    <h2 class="mb-4">Recommended For You</h2>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      {% for product in recommended_products %}
+      <div class="col">
+        <div class="card h-100 shadow-sm border-warning">
+          <div class="position-absolute top-0 start-0 bg-warning text-dark px-2 py-1 m-2 rounded">
+            <i class="fas fa-thumbs-up me-1"></i> Recommended
+          </div>
+          <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+               style="height: 200px; object-fit: contain; padding-top: 15px;" 
+               onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+            <p class="card-text mb-2 mt-auto">
+              {% if product.discounted_price != 'N/A' %}
+              <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+              {% if product.discounted_price != product.price %}
+              <span class="text-decoration-line-through ms-2 text-muted">{{ product.price }}</span>
+              {% endif %}
+              {% else %}
+              <span class="fw-bold">{{ product.price }}</span>
+              {% endif %}
+            </p>
+            <div class="d-flex justify-content-between">
+              <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-outline-warning">View</a>
+              <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <button type="submit" class="btn btn-warning">
+                  <i class="fas fa-cart-plus"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Why Choose Us Section -->
+<section class="py-5">
+  <div class="container">
+    <h2 class="text-center mb-5">Why Choose Us</h2>
+    
+    <div class="row g-4">
+      <div class="col-md-4 text-center">
+        <div class="p-3">
+          <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+          <h4>Smart Recommendations</h4>
+          <p>Our AI-powered recommendation system learns your preferences to suggest products you'll love.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-4 text-center">
+        <div class="p-3">
+          <i class="fas fa-truck fa-3x text-primary mb-3"></i>
+          <h4>Fast Delivery</h4>
+          <p>Get your products delivered quickly and reliably to your doorstep.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-4 text-center">
+        <div class="p-3">
+          <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+          <h4>Secure Shopping</h4>
+          <p>Shop with confidence knowing your information is always protected.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ category }} - AmazonRecommend{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ category }}</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">{{ category }}</h1>
+    
+    <!-- Product Listing -->
+    {% if products %}
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in products %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+                     style="height: 200px; object-fit: contain;" 
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                <div class="card-body">
+                    <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+                    
+                    <!-- Rating -->
+                    {% if product.rating != 'N/A' %}
+                    <div class="mb-2">
+                        <div class="text-warning">
+                            {% set rating = product.rating|float %}
+                            {% for i in range(5) %}
+                                {% if i < rating|int %}
+                                    <i class="fas fa-star"></i>
+                                {% elif i < rating %}
+                                    <i class="fas fa-star-half-alt"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Price -->
+                    <p class="card-text">
+                        {% if product.discounted_price != 'N/A' %}
+                        <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+                        {% if product.discounted_price != product.price %}
+                        <span class="text-decoration-line-through ms-2">{{ product.price }}</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="fw-bold">{{ product.price }}</span>
+                        {% endif %}
+                    </p>
+                    
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-primary">
+                            View Details
+                        </a>
+                        <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-cart-plus"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No products found in this category.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

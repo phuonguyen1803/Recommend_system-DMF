@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Search Results for "{{ query }}" - AmazonRecommend{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Search Results</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">Search Results for "{{ query }}"</h1>
+    
+    <!-- Search Stats -->
+    <p class="text-muted mb-4">
+        Found {{ results|length }} results for your search.
+    </p>
+    
+    <!-- Product Listing -->
+    {% if results %}
+    <div class="row">
+        {% for product in results %}
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="row g-0">
+                    <div class="col-md-3">
+                        <img src="{{ product.image_url }}" class="img-fluid rounded-start" alt="{{ product.name }}" 
+                             style="height: 200px; object-fit: contain; padding: 10px;" 
+                             onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                    </div>
+                    <div class="col-md-9">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            
+                            <!-- Rating -->
+                            {% if product.rating != 'N/A' %}
+                            <div class="mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="text-warning me-2">
+                                        {% set rating = product.rating|float %}
+                                        {% for i in range(5) %}
+                                            {% if i < rating|int %}
+                                                <i class="fas fa-star"></i>
+                                            {% elif i < rating %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <span>{{ product.rating }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Price -->
+                            <p class="card-text">
+                                {% if product.discounted_price != 'N/A' %}
+                                <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+                                {% if product.discounted_price != product.price %}
+                                <span class="text-decoration-line-through ms-2">{{ product.price }}</span>
+                                {% endif %}
+                                {% else %}
+                                <span class="fw-bold">{{ product.price }}</span>
+                                {% endif %}
+                            </p>
+                            
+                            <!-- Buttons -->
+                            <div class="d-flex">
+                                <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-primary me-2">
+                                    View Details
+                                </a>
+                                <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <input type="hidden" name="next" value="{{ request.path }}?q={{ query }}">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-cart-plus me-2"></i> Add to Cart
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No products found matching your search criteria. Try different keywords.
+    </div>
+    
+    <div class="mt-4">
+        <h4>Suggestions:</h4>
+        <ul>
+            <li>Check your spelling</li>
+            <li>Try more general keywords</li>
+            <li>Try different keywords</li>
+            <li>Browse our categories instead</li>
+        </ul>
+        <a href="{{ url_for('home') }}" class="btn btn-primary">Return to Home</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

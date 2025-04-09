@@ -1,0 +1,119 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ product.name }} - AmazonRecommend{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('category', category=product.category) }}">{{ product.category }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name | truncate(30) }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-5 mb-4">
+            <div class="card border-0">
+                <img src="{{ product.image_url }}" class="card-img-top" 
+                     alt="{{ product.name }}" 
+                     style="height: 400px; object-fit: contain; padding: 20px;" 
+                     onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+            </div>
+        </div>
+        
+        <!-- Product Details -->
+        <div class="col-lg-7">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            
+            <!-- Rating -->
+            {% if product.rating != 'N/A' %}
+            <div class="mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="text-warning me-2">
+                        {% set rating = product.rating|float %}
+                        {% for i in range(5) %}
+                            {% if i < rating|int %}
+                                <i class="fas fa-star"></i>
+                            {% elif i < rating %}
+                                <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <span>{{ product.rating }} ({{ product.rating_count }} reviews)</span>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Price -->
+            <div class="mb-3">
+                {% if product.discounted_price != 'N/A' and product.discounted_price != product.price %}
+                <div class="d-flex align-items-center">
+                    <h3 class="text-danger me-3">{{ product.discounted_price }}</h3>
+                    <span class="text-decoration-line-through">{{ product.price }}</span>
+                    <span class="badge bg-danger ms-3">{{ product.discount_percentage }}</span>
+                </div>
+                {% else %}
+                <h3>{{ product.price }}</h3>
+                {% endif %}
+            </div>
+            
+            <!-- In Stock Badge -->
+            <div class="mb-3">
+                <span class="badge bg-success">In Stock</span>
+            </div>
+            
+            <!-- Add to Cart Form -->
+            <form action="{{ url_for('add_to_cart', product_id=product.product_id) }}" method="post" class="mb-4">
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <div class="d-flex align-items-center mb-3">
+                    <label for="quantity" class="me-3">Quantity:</label>
+                    <select class="form-select" name="quantity" id="quantity" style="width: 5rem;">
+                        {% for i in range(1, 11) %}
+                        <option value="{{ i }}">{{ i }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-warning btn-lg">
+                    <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                </button>
+            </form>
+            
+            <!-- Product Description -->
+            <div class="mb-4">
+                <h4>About this item</h4>
+                <p>{{ product.about|replace("•", "<br>•")|safe }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Products Section -->
+    {% if similar_products %}
+    <div class="mt-5">
+        <h3 class="mb-4">You may also like</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for product in similar_products %}
+            <div class="col">
+                <div class="card h-100">
+                    <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+                         style="height: 200px; object-fit: contain;" 
+                         onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                    <div class="card-body">
+                        <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+                        <p class="card-text">
+                            <span class="fw-bold">{{ product.price }}</span>
+                        </p>
+                        <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

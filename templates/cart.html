@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block title %}Shopping Cart - AmazonRecommend{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('home') }}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">Shopping Cart</h1>
+    
+    {% if cart_products %}
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Cart Items -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Cart Items ({{ cart_products|length }})</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('update_cart') }}" method="post">
+                        {% for product in cart_products %}
+                        <div class="row mb-4">
+                            <div class="col-md-2">
+                                <img src="{{ product.image_url }}" 
+                                     alt="{{ product.name }}" 
+                                     class="img-fluid" 
+                                     style="max-height: 80px; object-fit: contain;"
+                                     onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                            </div>
+                            <div class="col-md-5">
+                                <h6>{{ product.name }}</h6>
+                                <p class="text-muted small">Price: {{ product.price }}</p>
+                                <a href="{{ url_for('remove_from_cart', product_id=product.product_id) }}" class="text-danger">
+                                    <i class="fas fa-trash-alt me-1"></i> Remove
+                                </a>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="quantity_{{ product.product_id }}" class="form-label">Quantity</label>
+                                    <select class="form-select" id="quantity_{{ product.product_id }}" name="quantity_{{ product.product_id }}">
+                                        {% for i in range(1, 11) %}
+                                        <option value="{{ i }}" {% if i == product.quantity %}selected{% endif %}>{{ i }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <h6>{{ product.price }} x {{ product.quantity }}</h6>
+                                <h5 class="text-success">₹{{ product.item_total }}</h5>
+                            </div>
+                        </div>
+                        {% if not loop.last %}
+                        <hr>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Update Cart Button -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i> Continue Shopping
+                            </a>
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fas fa-sync me-2"></i> Update Cart
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <!-- Order Summary -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>₹{{ total }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping</span>
+                        <span>Free</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total</strong>
+                        <h5 class="text-success">₹{{ total }}</h5>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button class="btn btn-success btn-lg" onclick="alert('Order placed successfully!')">
+                            <i class="fas fa-check-circle me-2"></i> Place Order
+                        </button>
+                    </div>
+                    
+                    <div class="alert alert-secondary mt-3">
+                        <i class="fas fa-info-circle me-2"></i> This is a demo. No real orders will be placed.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommended Products -->
+    {% if recommended_products %}
+    <div class="mt-5">
+        <h3 class="mb-4">Recommended For You</h3>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            {% for product in recommended_products %}
+            <div class="col">
+                <div class="card h-100 border-warning">
+                    <div class="position-absolute top-0 start-0 bg-warning text-dark p-2">
+                        <i class="fas fa-thumbs-up me-1"></i> Recommended
+                    </div>
+                    <img src="{{ product.image_url }}" class="card-img-top" alt="{{ product.name }}" 
+                         style="height: 200px; object-fit: contain; padding-top: 10px;" 
+                         onerror="this.src='{{ url_for('static', filename='img/placeholder.jpg') }}'">
+                    <div class="card-body">
+                        <h5 class="card-title" style="height: 3em; overflow: hidden;">{{ product.name }}</h5>
+                        <p class="card-text">
+                            {% if product.discounted_price != 'N/A' %}
+                            <span class="text-danger fw-bold">{{ product.discounted_price }}</span>
+                            {% if product.discounted_price != product.price %}
+                            <span class="text-decoration-line-through ms-2">{{ product.price }}</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="fw-bold">{{ product.price }}</span>
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('product_detail', product_id=product.product_id) }}" class="btn btn-warning">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty Cart -->
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+        <h3>Your cart is empty</h3>
+        <p class="text-muted">Looks like you haven't added any products to your cart yet.</p>
+        <a href="{{ url_for('home') }}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag me-2"></i> Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
